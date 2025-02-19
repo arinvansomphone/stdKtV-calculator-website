@@ -183,6 +183,11 @@ function calculateTwice() {
             stdKtV_13OutputTwice.textContent = `${stdKtV_13.toFixed(2)}`;
         }
     } else {
+        let UF_WarningTwice = document.getElementById("UF_WarningTwice");
+        if (UF_WarningTwice) {
+            UF_WarningTwice.textContent = null;
+        }
+
         let time13OutputTwice = document.getElementById("time13OutputTwice");
         if (time13OutputTwice) {
             time13OutputTwice.textContent = "N/A";
@@ -288,6 +293,11 @@ function calculateThrice() {
             stdKtV_13OutputThrice.textContent = `${stdKtV_13.toFixed(2)}`;
         }
     } else {
+        let UF_WarningThrice = document.getElementById("UF_WarningThrice");
+        if (UF_WarningThrice) {
+            UF_WarningThrice.textContent = null;
+        }
+
         let time13OutputThrice = document.getElementById("time13OutputThrice");
         if (time13OutputThrice) {
             time13OutputThrice.textContent = "N/A";
