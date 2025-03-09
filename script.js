@@ -65,8 +65,8 @@ function calculateVolumeOfPatient() {
     let isEstimateYes = document.querySelector('input[name="isestimate"]:checked').value === "yes";
     let volume = 0;
     if (isEstimateYes) {
-        let ureaVolume = getNumberValue("ureaDistribution");            
-        volume = ureaVolume / 0.9;
+        let ureaVolume = getNumberValue("ureaDistribution");
+        volume = ureaVolume            
 
     } else {
         let age = getNumberValue("age");
@@ -79,6 +79,8 @@ function calculateVolumeOfPatient() {
         } else if (gender === "female") {
             volume = -2.097 + (0.1069 * height) + (0.2466 * weight);
         }
+
+        volume = volume * 0.9
     }
 
     let volumeOutputTwice = document.getElementById("volumeOutputTwice");
@@ -102,7 +104,7 @@ function calculateTwice() {
     let kru = getNumberValue("kru");
     let stdKtV_target = getNumberValue("stdKtV_target")
     let weight = getNumberValue("weight");
-    let ureaVolume = calculateVolumeOfPatient() * 0.9;
+    let ureaVolume = calculateVolumeOfPatient();
     let t_prime = time; // start with current dialysis time
     let iteration_step = 0.1;
     let spKtV_prime = 0;
@@ -212,7 +214,7 @@ function calculateThrice() {
     let kru = getNumberValue("kru");
     let stdKtV_target = getNumberValue("stdKtV_target")
     let weight = getNumberValue("weight");
-    let ureaVolume = calculateVolumeOfPatient() * 0.9;
+    let ureaVolume = calculateVolumeOfPatient();
     let t_prime = time; // start with current dialysis time
     let iteration_step = 0.1;
     let spKtV_prime = 0;
