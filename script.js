@@ -222,7 +222,7 @@ function calculateThrice() {
     let eKtV = (spKtV * time) / (time + 30);
     let Keff = (ureaVolume * 1000 * eKtV) / time;
 
-    let UF_factor = 1 / (1-(0.74 * weeklyuf) / (2 * ureaVolume));
+    let UF_factor = 1 / (1-(0.74 * weeklyuf) / (3 * ureaVolume));
     let KruAdd = (10080 * kru) / (ureaVolume * 1000);
 
     let difference = 1;
@@ -288,7 +288,7 @@ function calculateThrice() {
 
         let eKtV_13 = (spKtV_13 * t_target13) / (t_target13 + 30);
         let a_13 = 1 - Math.exp(-eKtV_13);
-        let stdKtV_Leypoldt13 = (10080 * a_13 / t_target13) / (a_13 / eKtV_13 + (10080 / (2 * t_target13)) - 1);
+        let stdKtV_Leypoldt13 = (10080 * a_13 / t_target13) / (a_13 / eKtV_13 + (10080 / (3 * t_target13)) - 1);
         let stdKtV_13 = UF_factor * stdKtV_Leypoldt13 + KruAdd;
         let stdKtV_13OutputThrice = document.getElementById("stdKtV_13OutputThrice");
         if (stdKtV_13OutputThrice) {
