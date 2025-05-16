@@ -7,6 +7,7 @@
     <title>stdKt/V Calculator</title>
     <link rel = "stylesheet" href = "styles.css">
     <script src = "script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -28,7 +29,7 @@
 
     <div class="box-container">
         <div class="box parameters-box">
-            <h2>Parameters</h2>
+            <h2>Parameters on Current Three Time a Week Dialysis</h2>
 
             <form class="input-question">
                 <label>Do you have an estimate of the urea distribution volume?</label>
@@ -85,7 +86,7 @@
             </div>
 
             <form class="input-question">
-                <label for="quantity">Weight:</label><br>
+                <label for="quantity">End Treatment Weight:</label><br>
                 <div>
                     <input type="number" id="weight" name="weight" class = "numeric-input" required>
                     <span>kg</span>
@@ -133,9 +134,19 @@
             <button id="calculate" type = "submit" onclick="calculateVolumeOfPatient(); calculateTwice(); calculateThrice()">Calculate</button>
         </div>
         <div class="box output-box">
-            <h2>Results</h2>
+            <h2 class="results-title">Results</h2>
             <br>
-            <p>This is where graph will be</p>
+            <div class="graph">
+                <canvas id="myLineChart" height="400px" width="700px" margin = "auto"></canvas>
+            </div>
+            <script 
+                src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.min.js" 
+                integrity="sha512-L0Shl7nXXzIlBSUUPpxrokqq4ojqgZFQczTYlGjzONGTDAcLremjwaWv5A+EDLnxhQzY5xUZPWLOLqYRkY0Cbw==" 
+                crossorigin="anonymous" 
+                referrerpolicy="no-referrer"
+            ></script>
+            <script src="graph.js"></script>  
+            <p>Parameters for the graph not user inputted (will be changed): Kd = 130, G = 556, initial PUN = 100</p>           
             <br>
             <div class="output-column">
                 <div>
