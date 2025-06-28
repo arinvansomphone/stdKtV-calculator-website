@@ -84,11 +84,11 @@
     <div class="input-question"><label>Dialysis time:</label><br><div><input type="number" id="time" class="numeric-input" value="300" required><span> min</span></div></div>
     <div class="input-question"><label>Weekly UF:</label><br><div><input type="number" id="weeklyuf" class="numeric-input" value="7" required><span> L/wk</span></div></div>
     <div class="input-question"><label>Kru, default is 0:</label><br><div><input type="number" id="kru" class="numeric-input" value="0" required><span> mL/min</span></div></div>
-    <div class="input-question"><label>Current spKt/V:</label><br><div><input type="number" id="spKtV_current" class="numeric-input" value="2" required></div></div>
-    <div class="input-question"><label>Target stdKt/V, default is 2.3:</label><br><div><input type="number" id="stdKtV_target" class="numeric-input" value="2.3" required></div></div>
-    <div class="input-question"><label>G:</label><br><div><input type="number" id="G" class="numeric-input" value="520" required><span> mg/min</span></div></div>
+    <div class="input-question"><label>Current spKt/V:</label><br><div><input type="number" id="spKtV_current" class="numeric-input" value="2" step="any" min="0" required></div></div>
+    <div class="input-question"><label>Target stdKt/V, default is 2.3:</label><br><div><input type="number" id="stdKtV_target" class="numeric-input" value="2.3" step="any" min="0" required></div></div>
+    <div class="input-question"><label>G:</label><br><div><input type="number" id="G" class="numeric-input" value="5" step="any" min="0" required><span> mg/min</span></div></div>
     <div class="input-question">
-      <label>Pretreatment PUN: day option not working yet</label><br>
+      <label>Pretreatment PUN:</label><br>
       <div class="radio-group" style="margin-bottom: 0.5rem;">
         <label><input type="radio" name="punDay" value="monday" checked> Monday</label>
         <label><input type="radio" name="punDay" value="wednesday"> Wednesday</label>

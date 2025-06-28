@@ -3,6 +3,9 @@ import { getNumberValue, calculateVolumeOfPatient, calculateTwice, calculateThri
 export function drawGraph() {
   const canvas = document.getElementById('myLineChart');
   const ctx = canvas.getContext('2d');
+  
+  // Clear the canvas first
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Get selected PUN day
   const punDay = document.querySelector('input[name="punDay"]:checked')?.value || 'monday';
@@ -18,10 +21,17 @@ export function drawGraph() {
     friday: 5760
   };
   const dayTicks = [0, 1440, 2880, 4320, 5760, 7200, 8640];
+  
+  // Rotate the dayTicks array based on selected day
+  const rotatedDayTicks = punDay === 'wednesday' 
+    ? [2880, 4320, 5760, 7200, 8640, 10080, 1440]
+    : punDay === 'friday'
+    ? [5760, 7200, 8640, 10080, 1440, 2880, 4320]
+    : dayTicks;
 
   //// input parameters
   let Vtotal = calculateVolumeOfPatient() * 1000;
-  let G = getNumberValue("G");
+  let G = getNumberValue("G") * 100;
   let sessionlength = calculateThrice(); 
   let totalUF = getNumberValue("weeklyuf") * 1000; // is this UF the input or the calculated? 
   let Kru = getNumberValue("kru");
@@ -208,26 +218,28 @@ export function drawGraph() {
         {
           label: 'Current 3×/wk',
           data: C_V1beginold,
-          fill: false,            // no fill under the line
-          tension: 0.1,           // curve tension (0 = straight lines)
+          fill: false,
+          tension: 0.1,
           borderColor: 'rgb(232, 173, 96)',
           borderWidth: 1,
           pointRadius: 1, 
           pointHoverRadius: 4, 
           pointHitRadius: 4,
           pointBackgroundColor: 'rgb(232, 173, 96)',
+          backgroundColor: 'transparent'
         },
         {
           label: 'New 3×/wk',
           data: C_V1begin,
-          fill: false,            // no fill under the line
-          tension: 0.1,           // curve tension (0 = straight lines)
+          fill: false,
+          tension: 0.1,
           borderColor: 'rgba(75,192,192,1)',
           borderWidth: 1,
           pointRadius: 1,
           pointHoverRadius: 4,
           pointHitRadius: 4,
           pointBackgroundColor: 'rgba(75,192,192,1)',
+          backgroundColor: 'transparent'
         },
         {
           label: 'New 2×/wk',
@@ -240,9 +252,10 @@ export function drawGraph() {
           pointHoverRadius: 4,
           pointHitRadius: 4,
           pointBackgroundColor: 'rgba(153,102,255,1)',
+          backgroundColor: 'transparent'
         },
         {
-          label: 'APC (Prev 3×/wk)',                // dashed, orange
+          label: 'APC (Prev 3×/wk)',
           data: Array(10081).fill(apcold),
           borderColor: 'rgb(232, 173, 96)',
           borderWidth: 1.5,
@@ -250,10 +263,11 @@ export function drawGraph() {
           pointRadius: 0,
           fill: false,
           tension: 0,
-          hidden: true
+          hidden: true,
+          backgroundColor: 'transparent'
         },
         {
-          label: 'TAC (Prev 3×/wk)',                // dotted, orange
+          label: 'TAC (Prev 3×/wk)',
           data: Array(10081).fill(tacold),
           borderColor: 'rgb(232, 173, 96)',
           borderWidth: 1.5,
@@ -261,43 +275,47 @@ export function drawGraph() {
           pointRadius: 0,
           fill: false,
           tension: 0,
-          hidden: true
+          hidden: true,
+          backgroundColor: 'transparent'
         },
         {
-          label: 'APC (New 3×/wk)',            // dashed
-          data: Array(10081).fill(apc),        // flat horizontal line
-          borderColor: 'rgba(75,192,192,1)',   // same cyan
-          borderWidth: 1.5,
-          borderDash: [8, 4],                  // long-dash pattern
-          pointRadius: 0,                      // no markers
-          fill: false,
-          tension: 0,                          // perfectly straight
-          hidden: true
-        },
-        {
-          label: 'TAC (New 3×/wk)',            // dotted
-          data: Array(10081).fill(tac),
+          label: 'APC (New 3×/wk)',
+          data: Array(10081).fill(apc),
           borderColor: 'rgba(75,192,192,1)',
-          borderWidth: 1.5,
-          borderDash: [2, 4],                  // dot-dash (appears dotted)
-          pointRadius: 0,
-          fill: false,
-          tension: 0,
-          hidden: true
-        },
-        {
-          label: 'APC (New 2×/wk)',                 // dashed, purple
-          data: Array(10081).fill(apc2),
-          borderColor: 'rgba(153,102,255,1)',       // same purple
           borderWidth: 1.5,
           borderDash: [8, 4],
           pointRadius: 0,
           fill: false,
           tension: 0,
-          hidden: true
+          hidden: true,
+          backgroundColor: 'transparent'
         },
         {
-          label: 'TAC (New 2×/wk)',                 // dotted, purple
+          label: 'TAC (New 3×/wk)',
+          data: Array(10081).fill(tac),
+          borderColor: 'rgba(75,192,192,1)',
+          borderWidth: 1.5,
+          borderDash: [2, 4],
+          pointRadius: 0,
+          fill: false,
+          tension: 0,
+          hidden: true,
+          backgroundColor: 'transparent'
+        },
+        {
+          label: 'APC (New 2×/wk)',
+          data: Array(10081).fill(apc2),
+          borderColor: 'rgba(153,102,255,1)',
+          borderWidth: 1.5,
+          borderDash: [8, 4],
+          pointRadius: 0,
+          fill: false,
+          tension: 0,
+          hidden: true,
+          backgroundColor: 'transparent'
+        },
+        {
+          label: 'TAC (New 2×/wk)',
           data: Array(10081).fill(tac2),
           borderColor: 'rgba(153,102,255,1)',
           borderWidth: 1.5,
@@ -305,8 +323,9 @@ export function drawGraph() {
           pointRadius: 0,
           fill: false,
           tension: 0,
-          hidden: true
-        },
+          hidden: true,
+          backgroundColor: 'transparent'
+        }
       ]
     };
 
@@ -331,58 +350,75 @@ export function drawGraph() {
     <ul>${groups[2].join('')}</ul>`;
   },
   responsive: true,
-  layout: { padding: 0},
+  layout: { padding: 0 },
   plugins: {
-      title: {
+    title: {
       display: true,
       text: 'PUN Levels Throughout Week',
       font: {
         size: 26
       },
-      },
-      legend: {display: false},
-        decimation: {enabled : false}
-      },
-      tooltip: {
-      mode: 'index',
-      intersect: false
-      },
+      color: '#000'
+    },
+    legend: { display: false },
+    decimation: { enabled: false }
+  },
+  tooltip: {
+    mode: 'index',
+    intersect: false
+  },
   interaction: {
     mode: 'nearest',
     axis: 'x',
     intersect: false
-  }, 
+  },
   scales: {
-      x: {
-        ticks: {
-          autoSkip: false,
-          maxTicksLimit: 7,
-          callback: (value) => {
-            if (value === 10080) return '';
-            // Find the index in dayTicks
-            const idx = dayTicks.indexOf((value - dayStartIndices[punDay] + 10080) % 10080);
-            return idx !== -1 ? dayOrder[idx] : '';
-          }
-        },
-        min: 0,
-        max: 10080
+    x: {
+      grid: {
+        color: '#ddd',
+        drawBorder: true,
+        drawOnChartArea: true,
+        drawTicks: true
       },
-      y: {
+      ticks: {
+        callback: (value) => dayOrder[Math.floor(value / 1440)],
+        display: true,
+        values: [0, 1440, 2880, 4320, 5760, 7200, 8640],
+        maxTicksLimit: 7
+      },
+      min: 0,
+      max: 10080,
+      display: true
+    },
+    y: {
       display: true,
       title: {
-          display: true,
-          text: 'PUN',
-          font: {
-            weight: 'bold'
-          }
+        display: true,
+        text: 'PUN',
+        font: {
+          weight: 'bold'
+        },
+        color: '#000'
       },
-      beginAtZero: true
+      beginAtZero: true,
+      grid: {
+        color: '#ddd',
+        drawBorder: true
+      },
+      backgroundColor: 'transparent',
+      ticks: {
+        color: '#000'
       }
-  }
+    }
+  },
+  backgroundColor: 'transparent',
+  maintainAspectRatio: true
   };
 
   Chart.defaults.color = '#000';
-  Chart.defaults.font.family = "Inter"
+  Chart.defaults.font.family = "Inter";
+  Chart.defaults.backgroundColor = 'transparent';
+  Chart.defaults.borderColor = '#ddd';
 
   // HTML Legend Plugin for Chart.js v4+
   const htmlLegendPlugin = {
@@ -422,11 +458,15 @@ export function drawGraph() {
       ...options,
       plugins: {
         ...options.plugins,
-        legend: { display: false }, // hide default legend
+        legend: { display: false }
       }
     },
     plugins: [htmlLegendPlugin]
   });
+
+  // Remove any existing background
+  canvas.style.background = 'none';
+  ctx.globalCompositeOperation = 'source-over';
 
   // Click handler for legend
   document.getElementById('chartLegend').onclick = function(e) {

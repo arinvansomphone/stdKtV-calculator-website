@@ -150,7 +150,7 @@ button[type="submit"]:disabled {
   cursor: not-allowed;
 }
 
-/* text-link “buttons” that shouldn't look like links */
+/* text-link "buttons" that shouldn't look like links */
 .text-button {
   background: transparent;
   border: none;
@@ -170,16 +170,18 @@ footer { font-size: 0.875rem; text-align: center; margin-top: auto; }
 
 /* === Make the chart fill the whole results box ================================= */
 .graph {
-  grid-column: 1 / -1;            /* stretch across all columns in .output-box   */
+  grid-column: 1 / -1;            /* stretch across all columns in .output-box */
   width: 100%;
   aspect-ratio: 16/9;
+  background-color: #ffffff;
 }
 
 .graph canvas {
-  width: 100% !important;         /* let Chart.js scale responsively             */
+  width: 100% !important;         /* let Chart.js scale responsively */
   height: auto !important;
   display: block;
   margin: 0;
+  background-color: #ffffff;
 }
 
 /* tighten spacing around the chart & results columns */

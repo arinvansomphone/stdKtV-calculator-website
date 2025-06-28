@@ -208,9 +208,9 @@ export function calculateThrice() {
             UF_RateThrice.textContent = `${removalRate.toFixed(1)}` + " mL/kg/hr";
         }
 
-        let newspktvThrice = document.getElementById("newspktvThrice");
-        if (newspktvThrice) {
-            newspktvThrice.textContent = "";
+        let newspKtVThrice = document.getElementById("newspKtVThrice");
+        if (newspKtVThrice) {
+            newspKtVThrice.textContent = "";
         }
 
         let UF_WarningThrice = document.getElementById("UF_WarningThrice");
