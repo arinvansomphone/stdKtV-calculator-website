@@ -106,7 +106,46 @@ nav a:hover, nav a:focus-visible { text-decoration: underline; }
 .input-question { margin-bottom: var(--space-3); }
 .input-question label { margin-right: var(--space-2); }
 
-.radio-group { margin-top: var(--space-1); display: flex; gap: var(--space-3); }
+.radio-group {
+  margin-top: var(--space-1);
+  display: inline-flex;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.radio-group label {
+  position: relative;
+  padding: var(--space-1) var(--space-3);
+  background: var(--clr-bg);
+  border-right: 1px solid var(--clr-border);
+  cursor: pointer;
+  transition: all var(--transition);
+  margin: 0;
+  user-select: none;
+  font-size: 0.9rem;
+}
+
+.radio-group label:last-child {
+  border-right: none;
+}
+
+.radio-group label:hover {
+  background: var(--clr-primary-10);
+}
+
+.radio-group input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.radio-group input[type="radio"]:checked + label,
+.radio-group label:has(input[type="radio"]:checked) {
+  background: var(--clr-primary);
+  color: white;
+  font-weight: 600;
+}
 
 .numeric-input,
 button[type="submit"] {

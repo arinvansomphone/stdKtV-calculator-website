@@ -80,13 +80,23 @@
     </div>
 
     <!-- remaining numeric inputs -->
-    <div class="input-question"><label>End-treatment weight:</label><br><div><input type="number" id="weight" class="numeric-input" value="70" required><span> kg</span></div></div>
+    <div class="input-question"><label>End treatment weight:</label><br><div><input type="number" id="weight" class="numeric-input" value="70" required><span> kg</span></div></div>
     <div class="input-question"><label>Dialysis time:</label><br><div><input type="number" id="time" class="numeric-input" value="300" required><span> min</span></div></div>
     <div class="input-question"><label>Weekly UF:</label><br><div><input type="number" id="weeklyuf" class="numeric-input" value="7" required><span> L/wk</span></div></div>
     <div class="input-question"><label>Kru, default is 0:</label><br><div><input type="number" id="kru" class="numeric-input" value="0" required><span> mL/min</span></div></div>
     <div class="input-question"><label>Current spKt/V:</label><br><div><input type="number" id="spKtV_current" class="numeric-input" value="1.3" step="any" min="0" required></div></div>
     <div class="input-question"><label>Target stdKt/V, default is 2.3:</label><br><div><input type="number" id="stdKtV_target" class="numeric-input" value="2.3" step="any" min="0" required></div></div>
-    <div class="input-question"><label>Pre-treatment PUN when spKt/V was obtained:</label><br><div><input type="number" id="G" class="numeric-input" value="5" step="any" min="0" required><span> mg/dL</span></div></div>
+    <div class="input-question">
+      <label>Pre-treatment PUN when spKt/V was obtained:</label><br>
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <div class="radio-group">
+          <label><input type="radio" name="pun-unit" value="M" checked> M</label>
+          <label><input type="radio" name="pun-unit" value="W"> W</label>
+          <label><input type="radio" name="pun-unit" value="F"> F</label>
+        </div>
+        <input type="number" id="G" class="numeric-input" value="100" step="any" min="0" required><span> mg/dL</span>
+      </div>
+    </div>
 
     <!-- SUBMIT -->
     <button id="calculate" type="submit">Calculate&nbsp;&amp;&nbsp;Plot</button>

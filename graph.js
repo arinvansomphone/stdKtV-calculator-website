@@ -68,19 +68,99 @@ function calculateConcentrations(initialPUN, p) {
 }
 
 // ─────────── NEW: find starting PUN that yields steady-state ───────────
-function findSteadyStatePUN(params, tol = 0.01, maxIter = 30) {
-  let P0 = 100;                       // initial guess (mg/dL)
-  for (let i = 0; i < maxIter; i++) {
-    const arr = calculateConcentrations(P0, params);
-    const endPUN = arr[10080];        // concentration after one full week
-    const diff  = endPUN - P0;
-    if (Math.abs(diff) < tol) {
-      return { PUN: P0, concentrations: arr };
-    }
-    P0 += 0.5 * diff;                 // damped correction (safe & monotone)
+function findSteadyStatePUN(params, targetPUN, measuredDay = 'M', tol = 0.01, maxIter = 50) {
+  // Calculate offsets dynamically based on session structure
+  // For 3x per week (M-W-F): sessions at 0, 2880, 5760
+  // For 2x per week: depends on schedule, but we'll calculate from params
+  let measurementMinute = 0;
+  
+  if (params.sessions.length === 3) {
+    // 3x per week (M-W-F schedule)
+    const dayOffsets = {
+      'M': 0,                                         // Monday pre-treatment (start)
+      'W': params.sessions[0].length + params.sessions[0].gap,  // After Mon treatment + gap
+      'F': params.sessions[0].length + params.sessions[0].gap + 
+           params.sessions[1].length + params.sessions[1].gap   // After Mon + Wed treatments + gaps
+    };
+    measurementMinute = dayOffsets[measuredDay] || 0;
+  } else if (params.sessions.length === 2) {
+    // 2x per week - use first session (Monday equivalent)
+    // Could be extended to handle other days if needed
+    measurementMinute = 0;
   }
-  // fallback – return best effort even if not fully converged
-  return { PUN: P0, concentrations: calculateConcentrations(P0, params) };
+  
+  // Approach: Adjust G (urea generation rate) to match the target measured PUN
+  // Use a more robust bisection/damped iteration method
+  
+  // Create a copy of params to avoid modifying the original
+  const testParams = { ...params };
+  
+  // Helper function to find steady state and get measured PUN for a given G
+  const getMeasuredPUN = (G) => {
+    testParams.G = G;
+    let P0 = targetPUN;  // Use target as initial guess
+    for (let i = 0; i < 100; i++) {
+      const arr = calculateConcentrations(P0, testParams);
+      const endPUN = arr[10080];
+      const diff = endPUN - P0;
+      if (Math.abs(diff) < 0.00001) {  // Very tight tolerance for steady state
+        P0 = endPUN;
+        break;
+      }
+      P0 += 0.5 * diff;
+    }
+    const steadyConc = calculateConcentrations(P0, testParams);
+    return { P0, measuredPUN: steadyConc[measurementMinute], concentrations: steadyConc };
+  };
+  
+  // Binary search bounds for G
+  let Glow = 1;  // Lowered from 10 to allow lower G values
+  let Ghigh = 5000;
+  let bestG = params.G;
+  let bestResult = null;
+  
+  // First, check which direction we need to go
+  const initialResult = getMeasuredPUN(params.G);
+  console.log(`Initial: G=${params.G}, measured=${(initialResult.measuredPUN*100).toFixed(1)} mg/dL, target=${(targetPUN*100).toFixed(1)} mg/dL`);
+  
+  if (initialResult.measuredPUN < targetPUN) {
+    Glow = params.G;
+  } else {
+    Ghigh = params.G;
+  }
+  
+  // Binary search for the right G
+  for (let iter = 0; iter < maxIter; iter++) {
+    const testG = (Glow + Ghigh) / 2;
+    const result = getMeasuredPUN(testG);
+    const error = result.measuredPUN - targetPUN;
+    
+    console.log(`Iteration ${iter}: G=${testG.toFixed(2)}, measured PUN=${(result.measuredPUN*100).toFixed(1)} mg/dL, error=${(error*100).toFixed(3)}`);
+    
+    bestG = testG;
+    bestResult = result;
+    
+    if (Math.abs(error) < 0.001) {  // Tight tolerance: within 0.1 mg/dL
+      console.log(`Converged! Final G=${testG.toFixed(2)}`);
+      return { PUN: result.P0, concentrations: result.concentrations, adjustedG: testG };
+    }
+    
+    // Adjust bounds
+    if (result.measuredPUN < targetPUN) {
+      Glow = testG;
+    } else {
+      Ghigh = testG;
+    }
+    
+    // Check if bounds are too close
+    if (Math.abs(Ghigh - Glow) < 0.001) {  // Very tight bound check
+      console.log(`Bounds converged at G=${testG.toFixed(3)}, using best result`);
+      return { PUN: result.P0, concentrations: result.concentrations, adjustedG: testG };
+    }
+  }
+  
+  console.warn('Reached max iterations, using best result');
+  return { PUN: bestResult.P0, concentrations: bestResult.concentrations, adjustedG: bestG };
 }
 
 function simulateWeek(initialPUN, params) {
@@ -109,6 +189,10 @@ export function drawGraph() {
   let totalUF = getNumberValue("weeklyuf") * 1000; // is this UF the input or the calculated? 
   let Kru = getNumberValue("kru");
   let initialPUN = 100;
+  
+  // Read the target pre-treatment PUN and which day it was measured
+  let targetPUN = getNumberValue("G") / 100;  // Convert mg/dL to mg/mL (divide by 100)
+  let measuredDay = document.querySelector('input[name="pun-unit"]:checked')?.value || 'M';
 
   //// new 3x per week
   // new 3x per week secondary parameters 
@@ -329,18 +413,42 @@ export function drawGraph() {
   };
 
   // ---- Steady-state adjustment ----
-  ({ concentrations: C_V1beginold } = findSteadyStatePUN(params3xOld));
-  ({ concentrations: C_V1begin     } = findSteadyStatePUN(params3xNew));
-  ({ concentrations: C_V1begin2    } = findSteadyStatePUN(params2xNew));
+  console.log('Target PUN:', targetPUN, 'Measured day:', measuredDay);
+  const result1 = findSteadyStatePUN(params3xOld, targetPUN, measuredDay);
+  const result2 = findSteadyStatePUN(params3xNew, targetPUN, measuredDay);
+  const result3 = findSteadyStatePUN(params2xNew, targetPUN, measuredDay);
+  
+  console.log('Result1:', result1);
+  console.log('Result2:', result2);
+  console.log('Result3:', result3);
+  
+  C_V1beginold = result1.concentrations;
+  C_V1begin = result2.concentrations;
+  C_V1begin2 = result3.concentrations;
+  
+  console.log('Array lengths:', C_V1beginold?.length, C_V1begin?.length, C_V1begin2?.length);
+  
+  // Check if arrays have valid data
+  if (!C_V1beginold || !C_V1begin || !C_V1begin2) {
+    console.error('One or more concentration arrays are undefined!');
+    alert('Error: Failed to calculate concentrations. Check console for details.');
+    return;
+  }
+  
+  console.log('Sample values from C_V1begin:', C_V1begin.slice(0, 5));
+  console.log('Monday pre-treatment PUN:', C_V1begin[0] * 100, 'mg/dL');
 
-  tacold = C_V1beginold.reduce((s, v) => s + v, 0) / C_V1beginold.length;
-  apcold = (C_V1beginold[0] + C_V1beginold[2879] + C_V1beginold[5759]) / 3;
+  // Convert to mg/dL for display (concentrations are in mg/mL)
+  tacold = (C_V1beginold.reduce((s, v) => s + v, 0) / C_V1beginold.length) * 100;
+  apcold = ((C_V1beginold[0] + C_V1beginold[2879] + C_V1beginold[5759]) / 3) * 100;
 
-  tac   = C_V1begin.reduce((s, v) => s + v, 0) / C_V1begin.length;
-  apc   = (C_V1begin[0] + C_V1begin[2879] + C_V1begin[5759]) / 3;
+  tac   = (C_V1begin.reduce((s, v) => s + v, 0) / C_V1begin.length) * 100;
+  apc   = ((C_V1begin[0] + C_V1begin[2879] + C_V1begin[5759]) / 3) * 100;
 
-  tac2  = C_V1begin2.reduce((s, v) => s + v, 0) / C_V1begin2.length;
-  apc2  = (C_V1begin2[0] + C_V1begin2[4319]) / 2;
+  tac2  = (C_V1begin2.reduce((s, v) => s + v, 0) / C_V1begin2.length) * 100;
+  apc2  = ((C_V1begin2[0] + C_V1begin2[4319]) / 2) * 100;
+  
+  console.log('TAC/APC values:', { tacold, apcold, tac, apc, tac2, apc2 });
 
   /// graphing
   const data = {
@@ -348,7 +456,7 @@ export function drawGraph() {
       datasets: [
         {
           label: 'Current 3×/wk',
-          data: C_V1beginold,
+          data: C_V1beginold.map(v => v * 100),  // Convert mg/mL to mg/dL
           fill: false,
           tension: 0.1,
           borderColor: 'rgb(232, 173, 96)',
@@ -361,7 +469,7 @@ export function drawGraph() {
         },
         {
           label: 'New 3×/wk',
-          data: C_V1begin,
+          data: C_V1begin.map(v => v * 100),  // Convert mg/mL to mg/dL
           fill: false,
           tension: 0.1,
           borderColor: 'rgba(75,192,192,1)',
@@ -374,7 +482,7 @@ export function drawGraph() {
         },
         {
           label: 'New 2×/wk',
-          data: C_V1begin2,
+          data: C_V1begin2.map(v => v * 100),  // Convert mg/mL to mg/dL
           fill: false,
           tension: 0.1,
           borderColor: 'rgba(153,102,255,1)',
@@ -461,7 +569,8 @@ export function drawGraph() {
     };
 
     // Determine Y-axis range dynamically so differences are clearer
-    const allValues = [...C_V1beginold, ...C_V1begin, ...C_V1begin2];
+    // Convert to mg/dL for y-axis calculation
+    const allValues = [...C_V1beginold.map(v => v * 100), ...C_V1begin.map(v => v * 100), ...C_V1begin2.map(v => v * 100)];
     const minVal = Math.min(...allValues);
     const maxVal = Math.max(...allValues);
     const yMin = Math.floor(minVal / 10) * 10 - 10;   // one step below rounded min
