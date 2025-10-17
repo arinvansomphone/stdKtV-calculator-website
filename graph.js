@@ -189,6 +189,8 @@ export function drawGraph() {
   let totalUF = getNumberValue("weeklyuf") * 1000; // is this UF the input or the calculated? 
   let Kru = getNumberValue("kru");
   let initialPUN = 100;
+  let sessionlengthold = getNumberValue("time");
+  let Kd = getNumberValue("spKtV_current") * Vtotal / (sessionlengthold) - Kru;
   
   // Read the target pre-treatment PUN and which day it was measured
   let targetPUN = getNumberValue("G") / 100;  // Convert mg/dL to mg/mL (divide by 100)
@@ -207,7 +209,6 @@ export function drawGraph() {
   let UFrx1 = 3 / 7 * totalUF;
   let UFrx2 = 2 / 7 * totalUF;
   let UFrx3 = 2 / 7 * totalUF;
-  let Kd = getNumberValue("spKtV_current") * Vtotal / (sessionlength) - Kru;
 
   // new 3x per week calculations
   // volume
@@ -265,7 +266,6 @@ export function drawGraph() {
   let timebetween2_32 = 4 * 1440 - sessionlength2;
   let UFrx12 = 4 / 7 * totalUF;
   let UFrx22 = 3 / 7 * totalUF;
-  let Kd2 = getNumberValue("spKtV_current") * Vtotal / (sessionlength2) - Kru;
 
   // twice per week calculations
   // volume
@@ -295,7 +295,7 @@ export function drawGraph() {
   for (let i=0; i < 10080; i++) {
     let solute_added_by_G = (1-dialysison2[i]) * G
     let solute_added_by_V2 = Kic * (C_V2begin2[i] - C_V1begin2[i])
-    let solute_removed_by_HD = Kd2 * C_V1begin2[i] * dialysison2[i]
+    let solute_removed_by_HD = Kd * C_V1begin2[i] * dialysison2[i]
     let solute_removed_by_Kru = Kru * C_V1begin2[i]
     solute_V12 = solute_V12 + solute_added_by_G + solute_added_by_V2 - solute_removed_by_HD - solute_removed_by_Kru
     solute_V22 = solute_V22 - solute_added_by_V2
@@ -313,13 +313,11 @@ export function drawGraph() {
 
   //// previous 3x per week
   // secondary parameters
-  let sessionlengthold = getNumberValue("time");
   let timeoffold = 10080 - 3 * sessionlengthold;
   let fluidold = totalUF / timeoffold;
   let timebetween1_2old = 2 * 1440 - sessionlengthold;
   let timebetween2_3old = 2 * 1440 - sessionlengthold;
   let timebetween3_1old = 3 * 1440 - sessionlengthold;
-  let Kdold = getNumberValue("spKtV_current") * Vtotal / (sessionlengthold) - Kru;
 
   // previous 3x per week calculations
   // volume
@@ -352,7 +350,7 @@ export function drawGraph() {
   for (let i=0; i < 10080; i++) {
     let solute_added_by_G = (1-dialysisonold[i]) * G
     let solute_added_by_V2 = Kic * (C_V2beginold[i] - C_V1beginold[i])
-    let solute_removed_by_HD = Kdold * C_V1beginold[i] * dialysisonold[i]
+    let solute_removed_by_HD = Kd * C_V1beginold[i] * dialysisonold[i]
     let solute_removed_by_Kru = Kru * C_V1beginold[i]
     solute_V1old = solute_V1old + solute_added_by_G + solute_added_by_V2 - solute_removed_by_HD - solute_removed_by_Kru
     solute_V2old = solute_V2old - solute_added_by_V2
@@ -374,7 +372,7 @@ export function drawGraph() {
   const params3xOld = {
     ...baseParamsSS,
     sessionLength: sessionlengthold,
-    Kd: Kdold,
+    Kd: Kd,
     UFdistribution: [3/7, 2/7, 2/7],
     totalSessionTime: 3 * sessionlengthold,
     sessions: [
@@ -402,7 +400,7 @@ export function drawGraph() {
   const params2xNew = {
     ...baseParamsSS,
     sessionLength: sessionlength2,
-    Kd: Kd2,
+    Kd: Kd,
     UFdistribution: [4/7, 3/7],
     totalSessionTime: 2 * sessionlength2,
     sessions: [
@@ -414,17 +412,50 @@ export function drawGraph() {
 
   // ---- Steady-state adjustment ----
   console.log('Target PUN:', targetPUN, 'Measured day:', measuredDay);
-  const result1 = findSteadyStatePUN(params3xOld, targetPUN, measuredDay);
-  const result2 = findSteadyStatePUN(params3xNew, targetPUN, measuredDay);
-  const result3 = findSteadyStatePUN(params2xNew, targetPUN, measuredDay);
   
-  console.log('Result1:', result1);
-  console.log('Result2:', result2);
-  console.log('Result3:', result3);
+  // Step 1: Find steady-state G using OLD 3×/week schedule
+  const result1 = findSteadyStatePUN(params3xOld, targetPUN, measuredDay);
+  
+  if (!result1 || !result1.adjustedG || !result1.concentrations) {
+    console.error('Error: result1 is invalid:', result1);
+    alert('Error calculating steady-state for old schedule. Check console.');
+    return;
+  }
+  
+  const adjustedG = result1.adjustedG;
+  
+  console.log('Result1 (Old 3×):', result1);
+  console.log('Adjusted G from old schedule:', adjustedG);
+  
+  // Step 2: Use the same G for NEW schedules and find their steady-state
+  params3xNew.G = adjustedG;
+  params2xNew.G = adjustedG;
+  
+  // Helper function to find steady-state PUN with fixed G (no G adjustment)
+  const findSteadyStateWithFixedG = (params) => {
+    let P0 = targetPUN;  // Initial guess
+    for (let i = 0; i < 100; i++) {
+      const arr = calculateConcentrations(P0, params);
+      const endPUN = arr[10080];
+      const diff = endPUN - P0;
+      if (Math.abs(diff) < 0.00001) {
+        P0 = endPUN;
+        break;
+      }
+      P0 += 0.5 * diff;
+    }
+    return calculateConcentrations(P0, params);
+  };
+  
+  const result2_concentrations = findSteadyStateWithFixedG(params3xNew);
+  const result3_concentrations = findSteadyStateWithFixedG(params2xNew);
+  
+  console.log('New 3× with fixed G - sample values:', result2_concentrations.slice(0, 5));
+  console.log('New 2× with fixed G - sample values:', result3_concentrations.slice(0, 5));
   
   C_V1beginold = result1.concentrations;
-  C_V1begin = result2.concentrations;
-  C_V1begin2 = result3.concentrations;
+  C_V1begin = result2_concentrations;
+  C_V1begin2 = result3_concentrations;
   
   console.log('Array lengths:', C_V1beginold?.length, C_V1begin?.length, C_V1begin2?.length);
   
@@ -573,7 +604,7 @@ export function drawGraph() {
     const allValues = [...C_V1beginold.map(v => v * 100), ...C_V1begin.map(v => v * 100), ...C_V1begin2.map(v => v * 100)];
     const minVal = Math.min(...allValues);
     const maxVal = Math.max(...allValues);
-    const yMin = Math.floor(minVal / 10) * 10 - 10;   // one step below rounded min
+    const yMin = Math.max(0, Math.floor(minVal / 10) * 10 - 10);   // one step below rounded min, but never below 0
     const yMax = Math.ceil(maxVal / 10) * 10 + 10;    // one step above rounded max
 
     const options = {

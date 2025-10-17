@@ -131,7 +131,7 @@ export function calculateTwice() {
         let t_target13 = Math.round((60 * weightAccumulation) / (weight * 13));
         let UF_WarningTwice = document.getElementById("UF_WarningTwice");
         if (UF_WarningTwice) {
-            UF_WarningTwice.textContent = "NOTE🚨: The predicted UF rate is greater than 13 mL/kg/hr. Increasing time to " + `${t_target13}` + " minutes would reduce the UF rate to 13 mL/kg/hr.";
+            UF_WarningTwice.innerHTML = "<strong>NOTE🚨</strong>: The predicted UF rate is greater than 13 mL/kg/hr. Increasing time to " + `${t_target13}` + " minutes would reduce the UF rate to 13 mL/kg/hr.";
         }
     }
     return t_target
@@ -201,7 +201,7 @@ export function calculateThrice() {
         let t_target13 = Math.round((60 * weightAccumulation) / (weight * 13));
         let UF_WarningThrice = document.getElementById("UF_WarningThrice");
         if (UF_WarningThrice) {
-            UF_WarningThrice.textContent = "NOTE🚨: The predicted UF rate is greater than 13 mL/kg/hr. Increasing time to " + `${t_target13}` + " minutes would reduce the UF rate to 13 mL/kg/hr.";
+            UF_WarningThrice.innerHTML = "<strong>NOTE🚨</strong>: The predicted UF rate is greater than 13 mL/kg/hr. Increasing time to " + `${t_target13}` + " minutes would reduce the UF rate to 13 mL/kg/hr.";
         }
     } 
     return t_target;
