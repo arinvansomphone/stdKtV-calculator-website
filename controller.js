@@ -119,7 +119,7 @@ export function calculateTwice() {
 
     let newspKtVTwice = document.getElementById("newspKtVTwice");
     if (newspKtVTwice) {
-        newspKtVTwice.textContent = `${spKtV_prime.toFixed(1)}`;
+        newspKtVTwice.textContent = `${spKtV_prime.toFixed(2)}`;
     }
     
     if (removalRate < 13) {
@@ -190,7 +190,7 @@ export function calculateThrice() {
 
     let newspKtVThrice = document.getElementById("newspKtVThrice");
     if (newspKtVThrice) {
-        newspKtVThrice.textContent = `${spKtV_prime.toFixed(1)}`;
+        newspKtVThrice.textContent = `${spKtV_prime.toFixed(2)}`;
     }
     if (removalRate < 13) {
         let UF_WarningThrice = document.getElementById("UF_WarningThrice");
